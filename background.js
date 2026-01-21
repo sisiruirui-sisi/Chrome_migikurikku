@@ -1,5 +1,17 @@
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
+    id: "copy-url-only",
+    title: "URLのみをコピー",
+    contexts: ["all"]
+  });
+
+  chrome.contextMenus.create({
+    id: "copy-title-only",
+    title: "タイトルのみをコピー",
+    contexts: ["all"]
+  });
+
+  chrome.contextMenus.create({
     id: "copy-title-url",
     title: "タイトルとURLをコピー",
     contexts: ["all"]
@@ -7,11 +19,18 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
-  if (info.menuItemId === "copy-title-url") {
-    // 日本語URLをそのままにするため、decodeURIを使う
-    const decodedUrl = decodeURI(tab.url);
-    const textToCopy = `${tab.title}\n${decodedUrl}`;
+  const decodedUrl = decodeURI(tab.url);
+  let textToCopy = "";
 
+  if (info.menuItemId === "copy-url-only") {
+    textToCopy = decodedUrl;
+  } else if (info.menuItemId === "copy-title-only") {
+    textToCopy = tab.title;
+  } else if (info.menuItemId === "copy-title-url") {
+    textToCopy = `${tab.title}\n${decodedUrl}`;
+  }
+
+  if (textToCopy) {
     chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func: (text) => {
